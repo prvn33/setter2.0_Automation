@@ -36,7 +36,7 @@ export default defineConfig({
 
     baseURL: 'https://stage.setter.layline.live',
     storageState: 'admin-auth.json',
-    headless: false,
+    headless: true,
   },
 
   /* Configure projects for major browsers */
