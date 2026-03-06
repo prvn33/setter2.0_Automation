@@ -36,7 +36,8 @@ export default defineConfig({
 
     baseURL: 'https://stage.setter.layline.live',
     storageState: 'admin-auth.json',
-    headless: false,
+    headless: process.env.CI ? true : false,
+    browserName: 'chromium'
   },
 
   /* Configure projects for major browsers */
@@ -66,6 +67,7 @@ export default defineConfig({
       testMatch: /auth\.setup\.spec\.ts/,
       use: {
         browserName: 'chromium',
+        headless: process.env.CI ? true : false
       },
     },
 
@@ -76,9 +78,10 @@ export default defineConfig({
         browserName: 'chromium',
         storageState: 'admin-auth.json',
         baseURL: 'https://stage.setter.layline.live',
+        headless: process.env.CI ? true : false
       },
       dependencies: ['setup'],
-    },
+    }
 
 
     /* Test against mobile viewports. */
