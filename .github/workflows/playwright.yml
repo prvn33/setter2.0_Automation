@@ -22,7 +22,23 @@ jobs:
         run: npm ci
 
       - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+        run:
+          npx playwright install --with-deps
+
+          # Dev Push → Smoke
+      - name: Run Smoke Tests
+        if: github.event_name == 'push' && github.ref != 'refs/heads/main'
+        run: npx playwright test --grep @test
+        env:
+          CI:
+            true
+
+            # PR → Feature Tests
+      - name: Run Feature Tests
+        if: github.event_name == 'pull_request'
+        run: npx playwright test --grep @feature
+        env:
+          CI: true
 
       - name: Run Playwright tests
         run: npx playwright test

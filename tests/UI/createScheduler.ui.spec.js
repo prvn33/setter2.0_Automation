@@ -238,7 +238,7 @@ test.skip('Check a error validation for a service type and service dropdown for 
 
 })
 
-test.skip('Fill service type and service on landing page for new patient', async ({ page }) => {
+test.skip('@featureFill service type and service on landing page for new patient', async ({ page }) => {
     await page.goto(
         'https://stage.setter.layline.live/sinydermatology/1/sinydermatologybayridge/landing'
     );
@@ -254,7 +254,7 @@ test.skip('Fill service type and service on landing page for new patient', async
     await newPatientBtn.click();
 });
 
-test('Verfiy a location dropdown for choosing gray text service from a servicetype dropdowmn in landing page', async ({ page, request }) => {
+test('@test Verfiy a location dropdown for choosing gray text service from a servicetype dropdowmn in landing page', async ({ page, request }) => {
     await page.goto(
         'https://stage.setter.layline.live/sinydermatology/1/sinydermatologybayridge/landing'
     );
@@ -268,7 +268,7 @@ test('Verfiy a location dropdown for choosing gray text service from a servicety
     const response = await responsePromise;
 
     const body = await response.json();
-    console.log('JSON', body);
+    // console.log('JSON', body);
 
     const services = body.result;
 
@@ -276,10 +276,10 @@ test('Verfiy a location dropdown for choosing gray text service from a servicety
         s => s.isServiceAvailableAtLocation === 0
     );
 
-    console.log("Gray services:", grayServices);
+    // console.log("Gray services:", grayServices);
 
     const grayService = grayServices[0];
-    console.log('First gray service', grayService);
+    // console.log('First gray service', grayService);
 
 
     const serviceInputs = page.getByPlaceholder('Service Type');
