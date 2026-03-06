@@ -238,7 +238,7 @@ test.skip('Check a error validation for a service type and service dropdown for 
 
 })
 
-test.skip('@featureFill service type and service on landing page for new patient', async ({ page }) => {
+test('@feature Fill service type and service on landing page for new patient', async ({ page }) => {
     await page.goto(
         'https://stage.setter.layline.live/sinydermatology/1/sinydermatologybayridge/landing'
     );
