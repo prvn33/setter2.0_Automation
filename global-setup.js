@@ -6,7 +6,7 @@ dotenv.config();
 async function globalSetup() {
   console.log('Start with global setup');
 
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({ headless: true })
   const context = await browser.newContext();
   const page = await context.newPage();
 
