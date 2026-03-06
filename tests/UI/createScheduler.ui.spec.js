@@ -1,6 +1,9 @@
 import { request } from '@playwright/test';
-import { selectLocation } from '../helpers/LocationDropdown';
+import { selectLocation, verifyLocationFromAPI } from '../helpers/LandingPage/Location';
 import { selectComboBoxOption } from '../helpers/ComboBox';
+import { selectVisitReason } from '../helpers/LandingPage/VisitReason';
+import { selectServiceType } from '../helpers/LandingPage/ServiceType';
+import { verify } from 'node:crypto';
 const { test, expect } = require('@playwright/test');
 
 
@@ -235,36 +238,92 @@ test.skip('Check a error validation for a service type and service dropdown for 
 
 })
 
-test('Fill service type and service on landing page', async ({ page }) => {
+test.skip('Fill service type and service on landing page for new patient', async ({ page }) => {
     await page.goto(
         'https://stage.setter.layline.live/sinydermatology/1/sinydermatologybayridge/landing'
     );
 
-    // ---- Visit Reason Autocomplete ----
-    const visitReasonInput = page.getByPlaceholder('Visit reason');
+    await selectVisitReason(page, 'Cosmetic Procedure');
+    await expect(page.getByPlaceholder('Service Type')).toBeVisible();
 
-    await visitReasonInput.waitFor({ state: 'visible' });
-    await visitReasonInput.click();
-    await visitReasonInput.fill('Cosmetic Consultation', { delay: 1000 });
+    await selectServiceType(page, 'Botox treatment');
 
-    const visitReasonOption = page.getByRole('option', {
-        name: 'Cosmetic Consultation',
-    });
-
-    await visitReasonOption.waitFor({ state: 'visible' });
-    await visitReasonOption.click();
-
-    await expect(visitReasonInput).toHaveValue('Cosmetic Consultation');
-
-    // ---- Service Type (auto-filled) ----
-    const serviceTypeInput = page.getByPlaceholder('Service Type');
-
-    await expect(serviceTypeInput).toBeVisible();
-    await expect(serviceTypeInput).toHaveValue('Cosmetic Consultation');
-
-    // ---- New Patient Button ----
     const newPatientBtn = page.locator('#newPatient-button');
 
     await expect(newPatientBtn).toBeEnabled();
     await newPatientBtn.click();
 });
+
+test('Verfiy a location dropdown for choosing gray text service from a servicetype dropdowmn in landing page', async ({ page, request }) => {
+    await page.goto(
+        'https://stage.setter.layline.live/sinydermatology/1/sinydermatologybayridge/landing'
+    );
+
+    await selectVisitReason(page, 'Cosmetic Procedure');
+
+    const responsePromise = page.waitForResponse(resp =>
+        resp.url().includes('categoryId=2') && resp.status() === 200
+    );
+
+    const response = await responsePromise;
+
+    const body = await response.json();
+    console.log('JSON', body);
+
+    const services = body.result;
+
+    const grayServices = services.filter(
+        s => s.isServiceAvailableAtLocation === 0
+    );
+
+    console.log("Gray services:", grayServices);
+
+    const grayService = grayServices[0];
+    console.log('First gray service', grayService);
+
+
+    const serviceInputs = page.getByPlaceholder('Service Type');
+    await expect(serviceInputs).toBeVisible();
+
+    await serviceInputs.click();
+    await page.getByRole('option', { name: grayService.displayName }).click();
+
+
+    // await selectLocation(page);
+    await verifyLocationFromAPI(page);
+
+    const newPatientBtn = page.locator('#newPatient-button');
+
+    await expect(newPatientBtn).toBeEnabled();
+    await newPatientBtn.click();
+
+    const schedulerBtn = page.getByRole('button', { name: 'Schedule Procedure' });
+    await expect(schedulerBtn).toBeVisible({ timeout: 10000 });
+
+    await schedulerBtn.click();
+
+    await page.waitForURL('https://stage.setter.layline.live/sinydermatology/1/sinydermatologybayridge/intakequestion', { timeout: 10000 });
+
+    const heading = page.getByRole('heading', { name: 'Intake Questions' });
+    await expect(heading).toBeVisible({ timeout: 10000 });
+
+    const ContinueBtn = page.getByRole('button', { name: 'Continue' });
+    await expect(ContinueBtn).toBeVisible();
+    await expect(ContinueBtn).toBeEnabled();
+    await ContinueBtn.click();
+
+    await page.waitForURL('https://stage.setter.layline.live/sinydermatology/1/sinydermatologybayridge/findappointment', { timeout: 10000 });
+    const locationInput = page.getByPlaceholder('Location');
+
+    await expect(locationInput).toHaveValue(
+        /SINY Dermatology Upper East Side/
+    );
+
+    const serviceInput = page.getByPlaceholder('Visit reason');
+
+    await expect(serviceInput).toHaveValue(
+        /Microneedling/
+    );
+
+})
+
